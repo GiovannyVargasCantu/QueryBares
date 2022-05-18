@@ -1,109 +1,132 @@
---Creacion de QuitaPenas
+
+CREATE DATABASE Bares --Creacion de QuitaPenas (Comentar si ya creada)
+
 Use Bares --Usar la base de datos actual
 
-CREATE TABLE Region(
-RegionID int Primary Key,
-NombreRegion varchar(30),
-Descripcion text
+CREATE TABLE Horario(
+HorarioID int PRIMARY KEY NOT NULL,
+HoraEntrada datetime NOT NULL,
+HoraSalida datetime NOT NULL
 )
 
-CREATE TABLE Empleado(
-EmpleadoID int Primary Key,
-Nombre varchar(40) NOT NULL,  --Name
-Apellidos varchar (40) NOT NULL, --Lastname
-Correo varchar(60) UNIQUE,
-Horario char NOT NULL,
-Sueldo float NOT NULL,
-Puesto varchar(20) NOT NULL,
-RegionID int Foreign Key References Region(RegionID) NOT NULL, --Foreign Key de la PK Sucursal (De la tabla Sucursal)
-GerenteID int Foreign Key References Empleado(EmpleadoID) NOT NULL
+CREATE TABLE Puesto(
+PuestoID int PRIMARY KEY NOT NULL,
+NombrePuesto nvarchar(30) NOT NULL,
+Descripcion nvarchar(50) NOT NULL,
+Salario float NOT NULL
 )
 
-CREATE TABLE Mesero(
-MeseroID int Primary key Foreign Key References Empleado(EmpleadoID),
-CantidadMesas Int NOT NULL
-)
-
-CREATE TABLE CajeroPersona(
-CajeroID int Primary key Foreign Key References Empleado(EmpleadoID),
-RegistradoraID Int NOT NULL
+CREATE TABLE Estado(
+EstadoID int PRIMARY KEY NOT NULL,
+Descripcion nvarchar(50) NOT NULL,
 )
 
 CREATE TABLE Cliente(
-ClienteID int Primary Key,
-Nombre varchar(100),
-Apellido varchar(100),
-TarjetaBancaria varchar(30) UNIQUE,
-NumeroCliente varchar(20) UNIQUE
-)
-
-CREATE TABLE Mesa(
-NumeroMesa Int Primary Key,
-NumeroSillas Int NOT NULL,
-Ancho Int,
-Largo Int,
-MeseroID Int Foreign Key References Mesero(MeseroID)
+ClienteID int PRIMARY KEY NOT NULL,
+Nombre nvarchar(50),
+Apellido nvarchar(100),
+TarjetaBancaria nvarchar(30) UNIQUE,
+NumeroCliente nvarchar(20) UNIQUE
 )
 
 CREATE TABLE Proveedor(
-ProveedorID Int Primary Key,
-NombreCompania varchar(50) UNIQUE,
-NombreContacto varchar(50) UNIQUE,
-TelefonoProveedor varchar(20) UNIQUE,
-DireccionProveedor varchar(20) UNIQUE,
-CodigoPostal varchar(10) NOT NULL
+ProveedorID Int PRIMARY KEY NOT NULL,
+NombreCompania nvarchar(50) UNIQUE,
+NombreContacto nvarchar(50) UNIQUE,
+TelefonoProveedor nvarchar(15) UNIQUE,
+DireccionProveedor nvarchar(50) UNIQUE,
+CodigoPostal nvarchar(10) NOT NULL
 )
 
 CREATE TABLE TipoProducto(
-TipoProductoID Int Primary Key,
-NombreTipoProducto varchar(30) NOT NULL,
+TipoProductoID int PRIMARY KEY NOT NULL,
+NombreTipoProducto nvarchar(30) NOT NULL,
 Descripcion text,
 )
 
+CREATE TABLE Municipio(
+MunicipioID int PRIMARY KEY NOT NULL,
+EstadoID int FOREIGN KEY REFERENCES Estado(EstadoID) NOT NULL,
+Descripcion text 
+)
+
 CREATE TABLE Productos(
-ProductoID Int Primary Key,
-NombreProducto varchar(30) NOT NULL,
-Disponible varchar(10) NOT NULL,
-TipoProductoID Int Foreign Key References TipoProducto(TipoProductoID)
+ProductoID int PRIMARY KEY NOT NULL,
+NombreProducto nvarchar(50) NOT NULL,
+Disponible nvarchar(10),
+Cantidad int,
+PrecioUnidad float,
+TipoProductoID int FOREIGN KEY REFERENCES TipoProducto(TipoProductoID)
 )
 
 CREATE TABLE DetalleProveedor(
-ProductoID Int Foreign Key References Productos(ProductoID),
-ProveedorID Int Foreign Key References Proveedor(ProveedorID),
-Cantidad int NOT NULL,
-PrecioUnidad money NOT NULL
-Primary Key(ProductoID,ProveedorID)
+ProductoID Int FOREIGN KEY REFERENCES Productos(ProductoID) NOT NULL,
+ProveedorID Int FOREIGN KEY REFERENCES Proveedor(ProveedorID) NOT NULL,
+PRIMARY KEY(ProductoID,ProveedorID)
+)
+
+CREATE TABLE Empleado(
+EmpleadoID int PRIMARY KEY NOT NULL,
+Nombre nvarchar(40) NOT NULL,  --Name
+Apellidos nvarchar (40) NOT NULL, --Lastname
+Correo varchar(60) UNIQUE,
+LugarNacimiento nvarchar(60) NOT NULL,
+Sueldo float NOT NULL,
+HorarioID int FOREIGN KEY REFERENCES Horario(HorarioID) NOT NULL,
+MunicipioID int FOREIGN KEY REFERENCES Municipio(MunicipioID) NOT NULL,
+GerenteID int FOREIGN KEY REFERENCES Empleado(EmpleadoID),
+PuestoID int FOREIGN KEY REFERENCES Puesto(PuestoID)
+)
+
+CREATE TABLE EmpleadoMunicipio(
+EmpleadoID int FOREIGN KEY REFERENCES Empleado(EmpleadoID) NOT NULL,
+MunicipioID int FOREIGN KEY REFERENCES Municipio(MunicipioID) NOT NULL,
+PRIMARY KEY(EmpleadoID,MunicipioID)
+)
+
+CREATE TABLE Mesas(
+MesaID int PRIMARY KEY NOT NULL,
+NumeroSillas int,
+Ancho int,
+Largo int,
+MeseroID int FOREIGN KEY REFERENCES Empleado(EmpleadoID)
+)
+
+CREATE TABLE CajeroPersona(
+EmpleadoID int PRIMARY KEY FOREIGN KEY REFERENCES Empleado(EmpleadoID) NOT NULL,
+RegistradoraID int,
 )
 
 CREATE TABLE Comanda(
-ComandaID Int Primary Key,
-Importe money NOT NULL,
-MeseroID Int Foreign Key References Mesero(MeseroID),
-CajeroID Int Foreign Key References CajeroPersona(CajeroID),
-ClienteID Int Foreign Key References Cliente(ClienteID),
-NumeroMesa Int Foreign Key References Mesa(NumeroMesa)
+ComandaID int PRIMARY KEY NOT NULL,
+Importe float NOT NULL,
+MeseroID int FOREIGN KEY REFERENCES Empleado(EmpleadoID),
+CajeroID int FOREIGN KEY REFERENCES CajeroPersona(EmpleadoID),
+ClienteID int FOREIGN KEY REFERENCES Cliente(ClienteID),
+MesaID int FOREIGN KEY REFERENCES Mesas(MesaID)
+)
+
+CREATE TABLE DetalleComanda(
+ComandaID int FOREIGN KEY REFERENCES Comanda(ComandaID) NOT NULL,
+ProductoID int FOREIGN KEY REFERENCES Productos(ProductoID) NOT NULL,
+PRIMARY KEY(ComandaID,ProductoID)
 )
 
 CREATE TABLE Ticket(
-TicketID Int Primary key,
-Sucursal varchar(30) NOT NULL,
-Descripcion varchar(30) NOT NULL,
-PagoTotal money NOT NULL,
-Fecha Datetime NOT NULL,
-MetodoPago varchar(30) NOT NULL,
-CajeroID int Foreign Key References CajeroPersona(CajeroID) NOT NULL,
+TicketID int PRIMARY KEY NOT NULL,
+Descripcion text,
+PagoTotal float NOT NULL,
+Fecha datetime NOT NULL,
+MetodoPago nvarchar(30),
+CajeroID int Foreign Key References CajeroPersona(EmpleadoID) NOT NULL,
 ComandaID Int Foreign Key References Comanda(ComandaID) UNIQUE NOT NULL,
 ClienteID int Foreign Key References Cliente(ClienteID) NOT NULL
 )
 
-CREATE TABLE DetalleComanda(
-ComandaID Int Foreign Key References Comanda(ComandaID),
-ProductoID Int Foreign Key References Productos(ProductoID),
-Cantidad int NOT NULL,
-PrecioUnidad money NOT NULL
-Primary Key (ComandaID,ProductoID)
+CREATE TABLE DetalleTicket(
+TicketID int FOREIGN KEY REFERENCES Ticket(TicketID),
+ComandaID int FOREIGN KEY REFERENCES Comanda(ComandaID),
+PRIMARY KEY (TicketID, ComandaID)
 )
 
 
-SELECT * from Empleado
-Insert INTO Cliente(ClienteID,Nombre,Apellido,TarjetaBancaria,NumeroCliente) Values(1,'Miguel','Vargas','19547772312132','112312')
