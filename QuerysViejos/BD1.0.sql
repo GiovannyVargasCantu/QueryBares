@@ -37,10 +37,11 @@ TelefonoProveedor nvarchar(15) UNIQUE,
 DireccionProveedor nvarchar(100) UNIQUE,
 CodigoPostal nvarchar(10) NOT NULL
 )
---Quite Descripcion
+
 CREATE TABLE TipoProducto(
 TipoProductoID int PRIMARY KEY NOT NULL,
-NombreTipoProducto nvarchar(30) NOT NULL
+NombreTipoProducto nvarchar(30) NOT NULL,
+Descripcion nvarchar(200),
 )
 
 CREATE TABLE Municipios(
@@ -102,9 +103,10 @@ MeseroID int FOREIGN KEY REFERENCES Empleado(EmpleadoID),
 CajeroID int FOREIGN KEY REFERENCES Empleado(EmpleadoID),
 MesaID int FOREIGN KEY REFERENCES Mesas(MesaID)
 )
----Quite Descripcion
+
 CREATE TABLE Ticket(
 TicketID int PRIMARY KEY NOT NULL,
+Descripcion nvarchar(200),
 PagoTotal money NOT NULL,
 Fecha date NOT NULL,
 MetodoPago nvarchar(30),
